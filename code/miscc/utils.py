@@ -1,29 +1,29 @@
+
 import os
 import errno
 import numpy as np
 from torch.nn import init
-
 import torch
 import torch.nn as nn
-
+from sklearn.decomposition import PCA
 from PIL import Image, ImageDraw, ImageFont
 from copy import deepcopy
 import skimage.transform
-
 from miscc.config import cfg
 
 
 # For visualization ################################################
-COLOR_DIC = {0:[128,64,128],  1:[244, 35,232],
-             2:[70, 70, 70],  3:[102,102,156],
-             4:[190,153,153], 5:[153,153,153],
-             6:[250,170, 30], 7:[220, 220, 0],
-             8:[107,142, 35], 9:[152,251,152],
-             10:[70,130,180], 11:[220,20, 60],
-             12:[255, 0, 0],  13:[0, 0, 142],
-             14:[119,11, 32], 15:[0, 60,100],
-             16:[0, 80, 100], 17:[0, 0, 230],
-             18:[0,  0, 70],  19:[0, 0,  0]}
+COLOR_DIC = {0:[128, 64, 128],  1:[244, 35, 232],
+             2:[70, 70, 70],    3:[102, 102, 156],
+             4:[190, 153, 153], 5:[153, 153, 153],
+             6:[250, 170, 30],  7:[220, 220, 0],
+             8:[107, 142, 35],  9:[152, 251, 152],
+             10:[70, 130, 180], 11:[220, 20, 60],
+             12:[255, 0, 0],    13:[0, 0, 142],
+             14:[119, 11, 32],  15:[0, 60, 100],
+             16:[0, 80, 100],   17:[0, 0, 230],
+             18:[0,  0, 70],    19:[0, 0,  0]}
+
 FONT_MAX = 50
 
 
@@ -45,7 +45,6 @@ def drawCaption(convas, captions, ixtoword, vis_size, off1=2, off2=2):
             sentence.append(word)
         sentence_list.append(sentence)
     return img_txt, sentence_list
-
 
 def build_super_images(real_imgs, captions, ixtoword,
                        attn_maps, att_sze, lr_imgs=None,
@@ -69,7 +68,6 @@ def build_super_images(real_imgs, captions, ixtoword,
         istart = (i + 2) * (vis_size + 2)
         iend = (i + 3) * (vis_size + 2)
         text_convas[:, istart:iend, :] = COLOR_DIC[i]
-
 
     real_imgs = \
         nn.Upsample(size=(vis_size, vis_size), mode='bilinear')(real_imgs)
@@ -109,7 +107,10 @@ def build_super_images(real_imgs, captions, ixtoword,
         attn = attn.view(-1, 1, att_sze, att_sze)
         attn = attn.repeat(1, 3, 1, 1).data.numpy()
         # n x c x h x w --> n x h x w x c
+
         attn = np.transpose(attn, (0, 2, 3, 1))
+        # print(attn.shape) => (19, 17, 17, 3)
+
         num_attn = attn.shape[0]
         #
         img = real_imgs[i]
@@ -123,10 +124,17 @@ def build_super_images(real_imgs, captions, ixtoword,
         minVglobal, maxVglobal = 1, 0
         for j in range(num_attn):
             one_map = attn[j]
+            # print(one_map.shape) => (17, 17, 3)
+            # print(vis_size) => 272
+            # print(att_sze)  => 17
+
             if (vis_size // att_sze) > 1:
                 one_map = \
                     skimage.transform.pyramid_expand(one_map, sigma=20,
-                                                     upscale=vis_size // att_sze)
+                                                     upscale=vis_size // att_sze, multichannel=True)
+
+            # print(one_map.shape) => (272, 272, 48)
+
             row_beforeNorm.append(one_map)
             minV = one_map.min()
             maxV = one_map.max()
@@ -139,9 +147,10 @@ def build_super_images(real_imgs, captions, ixtoword,
                 one_map = row_beforeNorm[j]
                 one_map = (one_map - minVglobal) / (maxVglobal - minVglobal)
                 one_map *= 255
-                #
                 PIL_im = Image.fromarray(np.uint8(img))
+                # one_map = one_map[:, :, :3]
                 PIL_att = Image.fromarray(np.uint8(one_map))
+
                 merged = \
                     Image.new('RGBA', (vis_size, vis_size), (0, 0, 0, 0))
                 mask = Image.new('L', (vis_size, vis_size), (210))
@@ -224,7 +233,7 @@ def build_super_images2(real_imgs, captions, cap_lens, ixtoword,
             if (vis_size // att_sze) > 1:
                 one_map = \
                     skimage.transform.pyramid_expand(one_map, sigma=20,
-                                                     upscale=vis_size // att_sze)
+                                                     upscale=vis_size // att_sze, multichannel=True)
             minV = one_map.min()
             maxV = one_map.max()
             one_map = (one_map - minV) / (maxV - minV)
@@ -234,9 +243,11 @@ def build_super_images2(real_imgs, captions, cap_lens, ixtoword,
         for j in range(num_attn):
             one_map = row_beforeNorm[j]
             one_map *= 255
-            #
+
             PIL_im = Image.fromarray(np.uint8(img))
+            # one_map = one_map[:, :, :3]
             PIL_att = Image.fromarray(np.uint8(one_map))
+            
             merged = \
                 Image.new('RGBA', (vis_size, vis_size), (0, 0, 0, 0))
             mask = Image.new('L', (vis_size, vis_size), (180))  # (210)
