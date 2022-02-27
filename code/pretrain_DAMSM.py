@@ -1,15 +1,13 @@
-from __future__ import print_function
 
+
+from __future__ import print_function
 from miscc.utils import mkdir_p
 from miscc.utils import build_super_images
 from miscc.losses import sent_loss, words_loss
 from miscc.config import cfg, cfg_from_file
-
 from datasets import TextDataset
 from datasets import prepare_data
-
 from model import RNN_ENCODER, CNN_ENCODER
-
 import os
 import sys
 import time
@@ -20,7 +18,6 @@ import dateutil.tz
 import argparse
 import numpy as np
 from PIL import Image
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -28,10 +25,8 @@ from torch.autograd import Variable
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 
-
 dir_path = (os.path.abspath(os.path.join(os.path.realpath(__file__), './.')))
 sys.path.append(dir_path)
-
 
 UPDATE_INTERVAL = 200
 def parse_args():
@@ -99,11 +94,10 @@ def train(dataloader, cnn_model, rnn_model, batch_size,
         if step > 0 and step % UPDATE_INTERVAL == 0:
             count = epoch * len(dataloader) + step
 
-            s_cur_loss0 = s_total_loss0[0] / UPDATE_INTERVAL
-            s_cur_loss1 = s_total_loss1[0] / UPDATE_INTERVAL
-
-            w_cur_loss0 = w_total_loss0[0] / UPDATE_INTERVAL
-            w_cur_loss1 = w_total_loss1[0] / UPDATE_INTERVAL
+            s_cur_loss0 = s_total_loss0 / UPDATE_INTERVAL
+            s_cur_loss1 = s_total_loss1 / UPDATE_INTERVAL
+            w_cur_loss0 = w_total_loss0 / UPDATE_INTERVAL
+            w_cur_loss1 = w_total_loss1 / UPDATE_INTERVAL
 
             elapsed = time.time() - start_time
             print('| epoch {:3d} | {:5d}/{:5d} batches | ms/batch {:5.2f} | '
@@ -154,8 +148,8 @@ def evaluate(dataloader, cnn_model, rnn_model, batch_size):
         if step == 50:
             break
 
-    s_cur_loss = s_total_loss[0] / step
-    w_cur_loss = w_total_loss[0] / step
+    s_cur_loss = s_total_loss / step
+    w_cur_loss = w_total_loss / step
 
     return s_cur_loss, w_cur_loss
 
@@ -181,6 +175,7 @@ def build_models():
         start_epoch = cfg.TRAIN.NET_E[istart:iend]
         start_epoch = int(start_epoch) + 1
         print('start_epoch', start_epoch)
+
     if cfg.CUDA:
         text_encoder = text_encoder.cuda()
         image_encoder = image_encoder.cuda()
@@ -202,6 +197,7 @@ if __name__ == "__main__":
     if args.data_dir != '':
         cfg.DATA_DIR = args.data_dir
     print('Using config:')
+
     pprint.pprint(cfg)
 
     if not cfg.TRAIN.FLAG:
@@ -268,17 +264,16 @@ if __name__ == "__main__":
             count = train(dataloader, image_encoder, text_encoder,
                           batch_size, labels, optimizer, epoch,
                           dataset.ixtoword, image_dir)
-            print('-' * 89)
+            # print('-' * 89)
             if len(dataloader_val) > 0:
                 s_loss, w_loss = evaluate(dataloader_val, image_encoder,
                                           text_encoder, batch_size)
                 print('| end epoch {:3d} | valid loss '
                       '{:5.2f} {:5.2f} | lr {:.5f}|'
                       .format(epoch, s_loss, w_loss, lr))
-            print('-' * 89)
+            # print('-' * 89)
             if lr > cfg.TRAIN.ENCODER_LR/10.:
                 lr *= 0.98
-
             if (epoch % cfg.TRAIN.SNAPSHOT_INTERVAL == 0 or
                 epoch == cfg.TRAIN.MAX_EPOCH):
                 torch.save(image_encoder.state_dict(),
