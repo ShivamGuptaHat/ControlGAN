@@ -178,6 +178,8 @@ class TextDataset(data.Dataset):
                         # t = t.encode('ascii', 'ignore').decode('ascii')
                         if len(t) > 0:
                             tokens_new.append(t)
+
+                    # just to verify
                     print(tokens_new)
                     all_captions.append(tokens_new)
                     cnt += 1
@@ -186,6 +188,7 @@ class TextDataset(data.Dataset):
                 if cnt < self.embeddings_num:
                     print('ERROR: the captions for %s less than %d'
                           % (filenames[i], cnt))
+                          
         return all_captions
 
     def build_dictionary(self, train_captions, test_captions):
