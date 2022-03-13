@@ -178,6 +178,7 @@ class TextDataset(data.Dataset):
                         # t = t.encode('ascii', 'ignore').decode('ascii')
                         if len(t) > 0:
                             tokens_new.append(t)
+                    print(tokens_new)
                     all_captions.append(tokens_new)
                     cnt += 1
                     if cnt == self.embeddings_num:
