@@ -152,6 +152,7 @@ class TextDataset(data.Dataset):
         #
         return filename_bbox
 
+
     def load_captions(self, data_dir, filenames):
         all_captions = []
         for i in range(len(filenames)):
@@ -165,7 +166,8 @@ class TextDataset(data.Dataset):
                     cap = cap.replace("\ufffd\ufffd", " ")
                     # picks out sequences of alphanumeric characters as tokens
                     # and drops everything else
-                    tokenizer = RegexpTokenizer(r'\w+')
+                    # tokenizer = RegexpTokenizer(r'\w+')
+                    tokenizer = RegexpTokenizer('\s+', gaps = True)
                     tokens = tokenizer.tokenize(cap.lower())
                     if len(tokens) == 0:
                         print('cap', cap)
@@ -173,7 +175,7 @@ class TextDataset(data.Dataset):
 
                     tokens_new = []
                     for t in tokens:
-                        t = t.encode('ascii', 'ignore').decode('ascii')
+                        # t = t.encode('ascii', 'ignore').decode('ascii')
                         if len(t) > 0:
                             tokens_new.append(t)
                     all_captions.append(tokens_new)
