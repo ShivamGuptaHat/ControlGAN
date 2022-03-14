@@ -180,8 +180,10 @@ class TextDataset(data.Dataset):
                         if len(t) > 0:
                             tokens_new.append(t)
 
-                    # just to verify
+                    # testing_______________
                     print(tokens_new)
+                    #_____________
+                    
                     all_captions.append(tokens_new)
                     cnt += 1
                     if cnt == self.embeddings_num:
@@ -237,33 +239,38 @@ class TextDataset(data.Dataset):
 
 
 
-# testing
+# testing__________________________
+        train_captions = self.load_captions(data_dir, train_names)
+        test_captions = self.load_captions(data_dir, test_names)
 
-        # print("load_text_data ########")
+        train_captions, test_captions, ixtoword, wordtoix, n_words = \
+            self.build_dictionary(train_captions, test_captions)
+        with open(filepath, 'wb') as f:
+            pickle.dump([train_captions, test_captions,
+                            ixtoword, wordtoix], f, protocol=2)
+            print('Save to: ', filepath)
         
+        #_____________________________
         
-        
-        if not os.path.isfile(filepath):
-            
-            train_captions = self.load_captions(data_dir, train_names)
-            test_captions = self.load_captions(data_dir, test_names)
+        # if not os.path.isfile(filepath):
+        #     train_captions = self.load_captions(data_dir, train_names)
+        #     test_captions = self.load_captions(data_dir, test_names)
 
-            train_captions, test_captions, ixtoword, wordtoix, n_words = \
-                self.build_dictionary(train_captions, test_captions)
-            with open(filepath, 'wb') as f:
-                pickle.dump([train_captions, test_captions,
-                             ixtoword, wordtoix], f, protocol=2)
-                print('Save to: ', filepath)
-        else:
-            print("inside load_text_data ########")
-            with open(filepath, 'rb') as f:
-                print("filepath", filepath)
-                x = pickle.load(f)
-                train_captions, test_captions = x[0], x[1]
-                ixtoword, wordtoix = x[2], x[3]
-                del x
-                n_words = len(ixtoword)
-                print('Load from: ', filepath)
+        #     train_captions, test_captions, ixtoword, wordtoix, n_words = \
+        #         self.build_dictionary(train_captions, test_captions)
+        #     with open(filepath, 'wb') as f:
+        #         pickle.dump([train_captions, test_captions,
+        #                      ixtoword, wordtoix], f, protocol=2)
+        #         print('Save to: ', filepath)
+        # else:
+        #     with open(filepath, 'rb') as f:
+        #         print("filepath", filepath)
+        #         x = pickle.load(f)
+        #         train_captions, test_captions = x[0], x[1]
+        #         ixtoword, wordtoix = x[2], x[3]
+        #         del x
+        #         n_words = len(ixtoword)
+        #         print('Load from: ', filepath)
         if split == 'train':
             # a list of list: each list contains
             # the indices of words in a sentence
