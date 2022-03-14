@@ -244,7 +244,7 @@ class TextDataset(data.Dataset):
         
         
         if not os.path.isfile(filepath):
-            print("inside load_text_data ########")
+            
             train_captions = self.load_captions(data_dir, train_names)
             test_captions = self.load_captions(data_dir, test_names)
 
@@ -255,6 +255,7 @@ class TextDataset(data.Dataset):
                              ixtoword, wordtoix], f, protocol=2)
                 print('Save to: ', filepath)
         else:
+            print("inside load_text_data ########")
             with open(filepath, 'rb') as f:
                 print("filepath", filepath)
                 x = pickle.load(f)
