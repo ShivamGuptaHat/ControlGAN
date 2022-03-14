@@ -1,3 +1,4 @@
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -18,6 +19,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 import numpy.random as random
+
 if sys.version_info[0] == 2:
     import cPickle as pickle
 else:
@@ -152,7 +154,6 @@ class TextDataset(data.Dataset):
         #
         return filename_bbox
 
-
     def load_captions(self, data_dir, filenames):
         all_captions = []
         for i in range(len(filenames)):
@@ -188,7 +189,6 @@ class TextDataset(data.Dataset):
                 if cnt < self.embeddings_num:
                     print('ERROR: the captions for %s less than %d'
                           % (filenames[i], cnt))
-                          
         return all_captions
 
     def build_dictionary(self, train_captions, test_captions):
@@ -233,6 +233,16 @@ class TextDataset(data.Dataset):
         filepath = os.path.join(data_dir, 'captions.pickle')
         train_names = self.load_filenames(data_dir, 'train')
         test_names = self.load_filenames(data_dir, 'test')
+
+
+
+
+# testing
+
+        print("load_text_data ########")
+        
+        
+        
         if not os.path.isfile(filepath):
             train_captions = self.load_captions(data_dir, train_names)
             test_captions = self.load_captions(data_dir, test_names)
