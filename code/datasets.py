@@ -239,11 +239,12 @@ class TextDataset(data.Dataset):
 
 # testing
 
-        print("load_text_data ########")
+        # print("load_text_data ########")
         
         
         
         if not os.path.isfile(filepath):
+            print("inside load_text_data ########")
             train_captions = self.load_captions(data_dir, train_names)
             test_captions = self.load_captions(data_dir, test_names)
 
