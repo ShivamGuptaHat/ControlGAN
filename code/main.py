@@ -54,7 +54,11 @@ def gen_example(wordtoix, algo):
                     if len(sent) == 0:
                         continue
                     sent = sent.replace("\ufffd\ufffd", " ")
-                    tokenizer = RegexpTokenizer(r'\w+')
+                    #testing_____
+
+
+                    # tokenizer = RegexpTokenizer(r'\w+')
+                    tokenizer = RegexpTokenizer('\s+', gaps = True)
                     tokens = tokenizer.tokenize(sent.lower())
                     if len(tokens) == 0:
                         print('sent', sent)
@@ -62,7 +66,7 @@ def gen_example(wordtoix, algo):
 
                     rev = []
                     for t in tokens:
-                        t = t.encode('ascii', 'ignore').decode('ascii')
+                        # t = t.encode('ascii', 'ignore').decode('ascii')
                         if len(t) > 0 and t in wordtoix:
                             rev.append(wordtoix[t])
                     captions.append(rev)
